@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Catalogue Content AI - powered by Claude</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <div>
+      <span class="eyebrow">Powered by Claude</span>
+      <h1>Catalogue Content AI</h1>
+      <p class="sub">Basic product data in, compliant and localised listings out. Claude generates, repairs and reviews.</p>
+      <div class="pills"><span>Native localisation</span><span>Claim compliance</span><span>Auto-repair</span><span>Human-in-the-loop</span></div>
+    </div>
+    <span id="mode" class="badge"></span>
+  </header>
+
+  <main>
+    <section class="card">
+      <details class="plain">
+        <summary><h2><span class="step">1</span>Source products <span class="hint">synthetic data</span> <span class="hint" id="productCount"></span></h2></summary>
+        <table id="products"></table>
+      <details>
+        <summary>Try your own product</summary>
+        <form id="custom">
+          <label>Brand <input name="brand" maxlength="60" placeholder="Acme"></label>
+          <label>Name <input name="name" maxlength="120" required placeholder="Acme Desk Lamp"></label>
+          <label>Category <select name="category" id="categorySel"></select></label>
+          <label class="wide">Product image (optional, improves classification) <input type="file" name="image" accept="image/jpeg,image/png,image/webp,image/gif"></label>
+          <label class="wide">Specs (one per line, key: value) <textarea name="specs" rows="4" placeholder="colour: Black&#10;material: Aluminium"></textarea></label>
+          <label class="wide">Supplier notes (unverified, may contain risky claims) <textarea name="raw_notes" rows="3" placeholder="Best lamp ever! Free shipping!"></textarea></label>
+          <button type="submit" class="secondary">Add product</button>
+        </form>
+      </details>
+      </details>
+    </section>
+
+    <section class="card">
+      <h2><span class="step">2</span>Markets</h2>
+      <div id="markets" class="chips"></div>
+      <div class="actions">
+        <button id="run">Generate listings</button>
+        <span id="progress" class="hint"></span>
+      </div>
+    </section>
+
+    <section class="card" id="resultsCard" hidden>
+      <h2><span class="step">3</span>Results <span class="hint">click a cell for details</span></h2>
+      <div id="matrix"></div>
+      <div id="detail"></div>
+    </section>
+
+    <section class="card" id="roiCard" hidden>
+      <h2><span class="step">4</span>Business impact</h2>
+      <div id="roi"></div>
+    </section>
+  </main>
+  <script src="/app.js" type="module"></script>
+</body>
+</html>

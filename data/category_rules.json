@@ -1,0 +1,29 @@
+{
+  "electronics": {
+    "required_attributes": ["colour", "connectivity", "battery_life"],
+    "legal_notice_required": false
+  },
+  "home": {
+    "required_attributes": ["material", "capacity"],
+    "legal_notice_required": false
+  },
+  "apparel": {
+    "required_attributes": ["material", "sizes"],
+    "legal_notice_required": false
+  },
+  "cosmetics": {
+    "required_attributes": ["volume", "key_ingredients"],
+    "legal_notice_required": true,
+    "legal_hint": "Cosmetics: no medical or drug claims (cure, heal, treat, clinically proven) unless listed in approved_claims. Include a short usage/ingredients notice."
+  },
+  "toys": {
+    "required_attributes": ["age_range", "piece_count"],
+    "legal_notice_required": true,
+    "legal_hint": "Toys: must carry an age-grading and small-parts/choking-hazard warning when the source says the set contains small parts. Never write 'safe for all ages'."
+  },
+  "food": {
+    "required_attributes": ["pack_size", "protein_per_serving"],
+    "legal_notice_required": true,
+    "legal_hint": "Food: only nutrition/health claims listed in approved_claims. No 'boosts immunity', 'burns fat' or similar. Include a short storage/allergen notice if the source provides one."
+  }
+}

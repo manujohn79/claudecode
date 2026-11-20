@@ -1,0 +1,44 @@
+[
+  {
+    "id": "P001", "sku": "NW-AB-001", "brand": "AuraBuds", "name": "AuraBuds Pro", "category": "electronics",
+    "specs": { "colour": "Midnight black", "connectivity": "Bluetooth 5.3", "battery_life": "8 h earbuds, 32 h with charging case", "water_resistance": "IPX5", "weight": "4.5 g per earbud", "noise_cancelling": "Active noise cancelling, 3 modes", "in_the_box": "Earbuds, charging case, USB-C cable, 3 ear tip sizes" },
+    "approved_claims": ["IPX5 water resistant", "Up to 32 h total battery life"],
+    "raw_notes": "BEST EARBUDS IN THE WORLD!!! #1 seller. Free shipping, lifetime guarantee. ANC removes 99% of noise. Great for gym, commute, calls."
+  },
+  {
+    "id": "P002", "sku": "NW-HK-002", "brand": "HydroKeep", "name": "HydroKeep Insulated Bottle 750 ml", "category": "home",
+    "specs": { "material": "18/8 stainless steel, BPA-free lid", "capacity": "750 ml (25 oz)", "keeps_cold": "24 h", "keeps_hot": "12 h", "height": "26 cm (10.2 in)", "dishwasher_safe": "Lid only", "colour": "Glacier blue" },
+    "approved_claims": ["Keeps drinks cold for up to 24 hours", "Keeps drinks hot for up to 12 hours", "BPA-free"],
+    "raw_notes": "100% eco friendly, saves the planet. Perfect for everyone. Fits most cup holders. Sale price this week!"
+  },
+  {
+    "id": "P003", "sku": "NW-EW-003", "brand": "EcoWeave", "name": "EcoWeave Organic Cotton T-Shirt", "category": "apparel",
+    "specs": { "material": "100% organic cotton, GOTS certified", "weight": "180 gsm", "sizes": "S, M, L, XL, XXL", "fit": "Regular", "colour": "Sand", "care": "Machine wash 30 C" },
+    "approved_claims": ["GOTS certified organic cotton"],
+    "raw_notes": "Soft feel-good fabric that cures skin irritation and heals eczema. Dermatologist loved. Bestseller of the season."
+  },
+  {
+    "id": "P004", "sku": "NW-SB-004", "brand": "SweepBot", "name": "SweepBot S5 Robot Vacuum", "category": "electronics",
+    "specs": { "colour": "White", "connectivity": "Wi-Fi 2.4 GHz, app control", "battery_life": "150 min runtime", "suction": "3000 Pa", "height": "9.5 cm (3.7 in)", "dust_bin": "400 ml", "noise": "58 dB", "in_the_box": "Robot, charging dock, 2 side brushes, 1 filter, manual" },
+    "approved_claims": ["Up to 150 min runtime", "3000 Pa suction"],
+    "raw_notes": "Guaranteed to clean every corner. Cleans better than any competitor. Smart mapping. Discount code SWEEP10."
+  },
+  {
+    "id": "P005", "sku": "NW-GR-005", "brand": "GlowRoot", "name": "GlowRoot Daily Moisturiser 50 ml", "category": "cosmetics",
+    "specs": { "volume": "50 ml (1.7 fl oz)", "key_ingredients": "Hyaluronic acid, glycerin, shea butter", "skin_type": "Normal to dry", "fragrance": "Fragrance-free", "pao": "12 months after opening" },
+    "approved_claims": ["Hydrates skin for 24 hours (consumer test, n=60)", "Fragrance-free"],
+    "raw_notes": "Cures acne and heals eczema. Clinically proven to remove wrinkles in 7 days. Dermatologist approved. Number one moisturiser."
+  },
+  {
+    "id": "P006", "sku": "NW-BB-006", "brand": "BlockBuilders", "name": "BlockBuilders Castle Set 120 pcs", "category": "toys",
+    "specs": { "age_range": "4+ years", "piece_count": "120 pieces", "material": "ABS plastic", "includes": "120 bricks, 2 mini figures, building guide", "small_parts": "Yes, contains small parts", "finished_size": "32 x 24 cm (12.6 x 9.4 in)" },
+    "approved_claims": ["120 pieces", "Compatible with major brick brands"],
+    "raw_notes": "Safe for all ages! Makes kids smarter. Best toy ever. Free shipping over 30 EUR."
+  },
+  {
+    "id": "P007", "sku": "NW-PC-007", "brand": "PowerCrunch", "name": "PowerCrunch Protein Bar, 12 Pack", "category": "food",
+    "specs": { "pack_size": "12 x 55 g (660 g)", "protein_per_serving": "20 g protein per bar", "sugar": "2.1 g per bar", "flavour": "Peanut caramel", "allergens": "Contains peanuts, milk, soy", "storage": "Store in a cool dry place" },
+    "approved_claims": ["High protein", "Low sugar"],
+    "raw_notes": "Boosts immunity, burns fat and prevents muscle loss. Healthiest bar on the market. 100% natural."
+  }
+]

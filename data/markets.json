@@ -1,0 +1,32 @@
+[
+  {
+    "id": "amazon_us", "label": "Amazon US", "channel": "marketplace", "language": "English (US)", "lang": "en", "locale": "en-US",
+    "units": "imperial", "title_max": 150, "bullet_count": 5, "bullet_max": 200, "description_min": 150, "description_max": 2000,
+    "banned_terms": ["best seller", "bestseller", "#1", "number one", "no. 1", "free shipping", "guarantee", "guaranteed", "world's best", "best in the world", "best in class", "sale", "discount"],
+    "notes": "Marketplace policy: no promotional or pricing language, no special characters in the title, no unverifiable superlatives."
+  },
+  {
+    "id": "amazon_de", "label": "Amazon DE", "channel": "marketplace", "language": "German", "lang": "de", "locale": "de-DE",
+    "units": "metric", "title_max": 150, "bullet_count": 5, "bullet_max": 200, "description_min": 150, "description_max": 2000,
+    "banned_terms": ["bestseller", "nr. 1", "nummer 1", "nummer eins", "kostenloser versand", "versandkostenfrei", "bester der welt", "weltbeste", "weltbester", "angebot", "rabatt", "heilt", "heilung", "therapie"],
+    "notes": "Use formal 'Sie' only if addressing the reader. Use metric units and German decimal comma."
+  },
+  {
+    "id": "web_fr", "label": "Own website FR", "channel": "website", "language": "French", "lang": "fr", "locale": "fr-FR",
+    "units": "metric", "title_max": 120, "bullet_count": 5, "bullet_max": 220, "description_min": 150, "description_max": 2500,
+    "banned_terms": ["meilleur du monde", "le meilleur", "n°1", "numéro 1", "numéro un", "livraison gratuite", "garantie à vie", "promotion", "soldes", "guérit", "guérison", "traite"],
+    "notes": "Use 'vous'. Use metric units and the French decimal comma. Keep a natural, not literal, tone."
+  },
+  {
+    "id": "web_es", "label": "Own website ES", "channel": "website", "language": "Spanish (Spain)", "lang": "es", "locale": "es-ES",
+    "units": "metric", "title_max": 120, "bullet_count": 5, "bullet_max": 220, "description_min": 150, "description_max": 2500,
+    "banned_terms": ["el mejor del mundo", "el mejor", "número 1", "nº 1", "envío gratis", "envío gratuito", "garantía de por vida", "oferta", "rebajas", "cura", "curación", "sana"],
+    "notes": "Use 'tú' form consistently. Use metric units and the Spanish decimal comma."
+  },
+  {
+    "id": "web_jp", "label": "Own website JP", "channel": "website", "language": "Japanese", "lang": "ja", "locale": "ja-JP",
+    "units": "metric", "title_max": 100, "bullet_count": 5, "bullet_max": 120, "description_min": 80, "description_max": 1200,
+    "banned_terms": ["世界一", "最高", "ナンバーワン", "送料無料", "生涯保証", "セール", "治る", "治療", "治癒"],
+    "notes": "Use polite です/ます form. Use metric units. Keep titles compact; the character limits are lower than in alphabetic languages."
+  }
+]

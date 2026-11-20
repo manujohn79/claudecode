@@ -1,0 +1,13 @@
+{
+  "name": "catalogue-content-ai",
+  "version": "0.1.0",
+  "description": "Claude-powered catalogue content generation, localisation and compliance checking (prototype, synthetic data only)",
+  "type": "module",
+  "private": true,
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "start": "node server.js",
+    "batch": "node cli.js",
+    "test": "node --test test/"
+  }
+}

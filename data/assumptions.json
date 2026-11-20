@@ -1,0 +1,21 @@
+{
+  "_note": "ILLUSTRATIVE assumptions for the business case. Replace with your own measured baselines before presenting externally.",
+  "manual": {
+    "minutes_per_listing": 40,
+    "breakdown": "20 min write, 12 min translate/adapt, 8 min compliance QA per product-market listing",
+    "hourly_cost_eur": 30
+  },
+  "automated": {
+    "human_review_minutes_approved": 1,
+    "human_review_minutes_needs_review": 6,
+    "eur_per_usd": 0.92
+  },
+  "pricing_usd_per_million_tokens": {
+    "_note": "Set to your actual model pricing. Defaults match a Sonnet-class model.",
+    "input": 3,
+    "output": 15,
+    "cache_write_multiplier": 1.25,
+    "cache_read_multiplier": 0.1
+  },
+  "scale_projection": { "skus": 10000, "markets": 5 }
+}
