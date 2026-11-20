@@ -40,5 +40,23 @@
     "specs": { "pack_size": "12 x 55 g (660 g)", "protein_per_serving": "20 g protein per bar", "sugar": "2.1 g per bar", "flavour": "Peanut caramel", "allergens": "Contains peanuts, milk, soy", "storage": "Store in a cool dry place" },
     "approved_claims": ["High protein", "Low sugar"],
     "raw_notes": "Boosts immunity, burns fat and prevents muscle loss. Healthiest bar on the market. 100% natural."
+  },
+  {
+    "id": "P008", "sku": "NW-TL-008", "brand": "TrailLite", "name": "TrailLite Backpack 28L", "category": "outdoor",
+    "specs": { "material": "Recycled ripstop nylon", "capacity": "28 L", "water_resistance": "Water-resistant coating (not waterproof)", "weight": "850 g", "laptop_sleeve": "Fits up to 16-inch laptop", "colour": "Charcoal grey" },
+    "approved_claims": ["Made from recycled ripstop nylon", "Fits up to 16-inch laptop"],
+    "raw_notes": "100% waterproof guarantee for life! Best backpack on Amazon, beats every competitor. Free gift included this week."
+  },
+  {
+    "id": "P009", "sku": "NW-NG-009", "brand": "NordGrain", "name": "NordGrain Granola Clusters 450g", "category": "food",
+    "specs": { "pack_size": "450 g", "protein_per_serving": "4 g protein per 40 g serving", "sugar": "5 g per serving", "ingredients": "Oats, honey, almonds, dried cranberries", "allergens": "Contains nuts, may contain traces of gluten", "storage": "Store in a cool dry place" },
+    "approved_claims": ["Good source of whole grains", "No artificial flavours"],
+    "raw_notes": "Boosts energy instantly and clinically proven to aid weight loss. #1 breakfast choice in Scandinavia. 100% natural, guaranteed to make you feel amazing."
+  },
+  {
+    "id": "P010", "sku": "NW-FF-010", "brand": "FeatherFit", "name": "FeatherFit Running Shoes", "category": "apparel",
+    "specs": { "material": "Breathable mesh upper, rubber outsole", "sizes": "38-46 EU", "weight": "230 g (size 42)", "drop": "8 mm heel-to-toe drop", "colour": "Grey/Orange", "closure": "Lace-up" },
+    "approved_claims": ["Breathable mesh upper", "230 g lightweight design (size 42)"],
+    "raw_notes": "Guaranteed to make you run faster! Best running shoe in the world, loved by professional athletes. Free shipping, buy 2 get 1 free!"
   }
 ]

@@ -1,4 +1,4 @@
-// Batch runner: node cli.js [--products P001,P005] [--markets amazon_de,web_fr] [--audiences professional,student] [--concurrency 4]
+// Batch runner: node cli.js [--products P001,P005] [--markets amazon_de,cdiscount_fr] [--audiences professional,student] [--concurrency 4]
 // Writes output/listings.json and output/listings.csv and prints the business-impact summary.
 import fs from 'node:fs';
 import path from 'node:path';

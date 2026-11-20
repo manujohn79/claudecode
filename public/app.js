@@ -15,6 +15,18 @@ function h(tag, props = {}, ...kids) {
 const state = { config: null, products: [], results: new Map(), selected: null, editingProduct: null, openReview: null };
 const keyOf = (p, m, a = 'general') => `${p}|${m}|${a}`;
 
+function openModal(contentNode) {
+  const backdrop = h('div', { class: 'modal-backdrop', onclick: (e) => { if (e.target === e.currentTarget) closeModal(); } },
+    h('div', { class: 'modal-panel' },
+      h('button', { type: 'button', class: 'modal-close', 'aria-label': 'Close', onclick: closeModal }, '×'),
+      contentNode));
+  $('modalRoot').replaceChildren(backdrop);
+}
+function closeModal() {
+  $('modalRoot').replaceChildren();
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+
 async function api(path, body) {
   const res = await fetch(path, body ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) } : undefined);
   const data = await res.json();
@@ -64,7 +76,15 @@ async function disconnectKey() {
   renderMode();
 }
 
+function switchTab(tab) {
+  state.activeTab = tab;
+  for (const btn of document.querySelectorAll('.tab')) btn.classList.toggle('active', btn.dataset.tab === tab);
+  for (const panel of document.querySelectorAll('.tab-panel')) panel.hidden = panel.dataset.tab !== tab;
+}
+
 async function init() {
+  for (const btn of document.querySelectorAll('.tab')) btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  switchTab('source');
   state.config = await api('/api/config');
   state.products = [...state.config.products];
   renderMode();
@@ -83,6 +103,7 @@ async function init() {
   $('reviewerName').addEventListener('change', (e) => localStorage.setItem('reviewerName', e.target.value));
   $('reviewFilter').addEventListener('change', () => loadReviewQueue());
   $('reviewRefresh').addEventListener('click', () => loadReviewQueue());
+  $('reviewApproveAll').addEventListener('click', bulkApprove);
   await loadReviewQueue();
 }
 
@@ -115,13 +136,15 @@ async function setImage(p, file) {
 // downscale in fileToImage); fall back to a plain data URL built from its media_type + base64 data.
 const imageSrc = (img) => img.preview || `data:${img.media_type};base64,${img.data}`;
 
-function imageCell(p) {
+function tileImage(p) {
   if (p.image) {
-    return h('td', {}, h('img', { class: 'thumb', src: imageSrc(p.image), alt: `${p.name} image` }),
-      h('button', { type: 'button', class: 'link', onclick: () => { delete p.image; renderProducts(); } }, 'Remove'));
+    return h('div', { class: 'tile-image-wrap' },
+      h('img', { src: imageSrc(p.image), alt: `${p.name} image` }),
+      h('button', { type: 'button', class: 'tile-image-remove', onclick: () => { delete p.image; renderProducts(); } }, 'Remove photo'));
   }
-  return h('td', {}, h('label', { class: 'upload' }, '+ Add image',
-    h('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp,image/gif', class: 'file-hidden', onchange: (e) => setImage(p, e.target.files[0]) })));
+  return h('div', { class: 'tile-image-wrap' },
+    h('label', { class: 'upload tile-upload' }, '+ Add image',
+      h('input', { type: 'file', accept: 'image/jpeg,image/png,image/webp,image/gif', class: 'file-hidden', onchange: (e) => setImage(p, e.target.files[0]) })));
 }
 
 const toLines = (arr) => (arr || []).join('\n');
@@ -136,12 +159,20 @@ function parseAttributes(text) {
   return out;
 }
 
-// Catalogue (non-custom) products can be edited in place, to simulate a PIM pushing an updated
-// price/spec; this is what the "Stale (source changed)" review-queue filter reacts to.
-async function saveProductEdit(p, specsEl, notesEl) {
+// Any product (catalogue or custom) can be edited in place. For a catalogue product this simulates
+// a PIM pushing an updated price/spec (persisted server-side as an override; see "Stale (source
+// changed)" in the review queue). A custom product has no server record, so it's just updated locally.
+async function saveProductEdit(p, form) {
+  const name = form.name.value.trim();
+  if (!name) return alert('Name is required.');
+  const patch = { brand: form.brand.value.trim(), name, specs: parseAttributes(form.specs.value), raw_notes: form.raw_notes.value.trim() };
   try {
-    const { product } = await api('/api/products/update', { productId: p.id, patch: { specs: parseAttributes(specsEl.value), raw_notes: notesEl.value.trim() } });
-    Object.assign(p, product);
+    if (p.custom) {
+      Object.assign(p, patch);
+    } else {
+      const { product } = await api('/api/products/update', { productId: p.id, patch });
+      Object.assign(p, product);
+    }
     state.editingProduct = null;
     renderProducts();
     await loadReviewQueue();
@@ -150,39 +181,49 @@ async function saveProductEdit(p, specsEl, notesEl) {
   }
 }
 
-function specsAndNotesCells(p) {
-  if (state.editingProduct === p.id) {
-    let specsEl, notesEl;
-    const form = h('div', { class: 'edit-product' },
-      h('label', {}, 'Specs (key: value per line)', (specsEl = h('textarea', { rows: 4 }, toKV(p.specs)))),
-      h('label', {}, 'Supplier notes', (notesEl = h('textarea', { rows: 2 }, p.raw_notes))),
-      h('div', { class: 'actions' },
-        h('button', { type: 'button', onclick: () => saveProductEdit(p, specsEl, notesEl) }, 'Save'),
-        h('button', { type: 'button', class: 'secondary', onclick: () => { state.editingProduct = null; renderProducts(); } }, 'Cancel')
+function removeProduct(p) {
+  state.products = state.products.filter((x) => x.id !== p.id);
+  if (state.editingProduct === p.id) state.editingProduct = null;
+  renderProducts();
+}
+
+function editTile(p) {
+  const form = h('form', { class: 'edit-product', onsubmit: (e) => e.preventDefault() },
+    h('label', {}, 'Brand', h('input', { name: 'brand', value: p.brand })),
+    h('label', {}, 'Name', h('input', { name: 'name', value: p.name, required: true })),
+    h('label', {}, 'Specs (key: value per line)', h('textarea', { name: 'specs', rows: 4 }, toKV(p.specs))),
+    h('label', {}, 'Supplier notes', h('textarea', { name: 'raw_notes', rows: 2 }, p.raw_notes)),
+    h('div', { class: 'actions' },
+      h('button', { type: 'button', onclick: () => saveProductEdit(p, form) }, 'Save'),
+      h('button', { type: 'button', class: 'secondary', onclick: () => { state.editingProduct = null; renderProducts(); } }, 'Cancel')
+    )
+  );
+  return h('div', { class: 'tile editing' }, h('h3', {}, `Editing: ${p.name}`), form);
+}
+
+function productTile(p, checked) {
+  if (state.editingProduct === p.id) return editTile(p);
+  return h('div', { class: 'tile' },
+    h('label', { class: 'tile-select' }, h('input', { type: 'checkbox', 'data-id': p.id, checked })),
+    tileImage(p),
+    h('div', { class: 'tile-body' },
+      h('b', {}, p.name),
+      h('div', { class: 'hint' }, `${p.sku} · ${p.category}`),
+      h('div', { class: 'tile-specs' }, Object.entries(p.specs).slice(0, 3).map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`).join(' · ')),
+      h('p', { class: 'risky tile-notes' }, p.raw_notes),
+      h('div', { class: 'row-actions' },
+        h('button', { type: 'button', class: 'link', onclick: () => { state.editingProduct = p.id; renderProducts(); } }, 'Edit'),
+        h('button', { type: 'button', class: 'link', onclick: () => removeProduct(p) }, 'Remove')
       )
-    );
-    return [h('td', { colspan: 2 }, form)];
-  }
-  return [
-    h('td', {}, Object.entries(p.specs).slice(0, 4).map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}`).join(' · ')),
-    h('td', { class: 'risky' },
-      p.raw_notes,
-      !p.custom && h('div', {}, h('button', { type: 'button', class: 'link', onclick: () => { state.editingProduct = p.id; renderProducts(); } }, 'Edit specs / notes')))
-  ];
+    )
+  );
 }
 
 function renderProducts() {
   $('productCount').textContent = `${state.products.length} products · click to expand`;
   const unchecked = new Set([...document.querySelectorAll('#products input[data-id]:not(:checked)')].map((c) => c.dataset.id));
-  const rows = state.products.map((p) =>
-    h('tr', {},
-      h('td', {}, h('input', { type: 'checkbox', 'data-id': p.id, checked: !unchecked.has(p.id) })),
-      h('td', {}, h('b', {}, p.name), h('div', { class: 'hint' }, `${p.sku} · ${p.category}`)),
-      imageCell(p),
-      ...specsAndNotesCells(p)
-    )
-  );
-  $('products').replaceChildren(h('tr', {}, h('th', {}), h('th', {}, 'Product'), h('th', {}, 'Image (optional)'), h('th', {}, 'Specs'), h('th', {}, 'Supplier notes (unverified)')), ...rows);
+  const tiles = state.products.map((p) => productTile(p, !unchecked.has(p.id)));
+  $('products').replaceChildren(...(tiles.length ? tiles : [h('p', { class: 'hint' }, 'No products left — add one below.')]));
 }
 
 async function addCustom(e) {
@@ -224,10 +265,9 @@ async function run() {
   state.currentAudience = audienceId;
   state.results.clear();
   state.selected = null;
-  $('resultsCard').hidden = false;
-  $('roiCard').hidden = true;
   $('detail').replaceChildren();
   $('run').disabled = true;
+  switchTab('results');
 
   const jobs = products.flatMap((p) => markets.map((m) => ({ p, m })));
   let done = 0;
@@ -278,6 +318,37 @@ function renderMatrix(products, markets) {
 
 const dl = (obj) => h('dl', {}, Object.entries(obj).flatMap(([k, v]) => [h('dt', {}, k.replace(/_/g, ' ')), h('dd', {}, String(v))]));
 const lenNote = (s, max) => h('span', { class: `len ${s.length > max ? 'err' : ''}` }, ` (${s.length}/${max})`);
+const sc = (label, v, min) => h('div', { class: 'score' }, h('b', { class: v >= min ? 'ok' : 'err' }, v), label);
+
+// Explains, in plain language, exactly which gate(s) kept this listing from auto-approving —
+// works for both a fresh /api/generate result and a stored review-queue entry (same field shapes).
+function reviewReasons(r) {
+  const reasons = [];
+  const errs = (r.violations || []).filter((v) => v.severity === 'error');
+  if (errs.length) reasons.push(`${errs.length} deterministic rule violation${errs.length > 1 ? 's' : ''} (listed below)`);
+  const ii = r.listing?.image_insights;
+  if (ii && ii.matches_category === false) reasons.push('the product image does not match the stated category');
+  if ((ii?.discrepancies || []).length) reasons.push('the image conflicts with the product specs');
+
+  if (r.mode !== 'live') {
+    reasons.push('offline mock mode: no real Claude review ran, so the brand-voice and localisation scores below are fixed placeholders that never clear the threshold — connect an Anthropic API key to see real scores and real auto-approval');
+    return reasons;
+  }
+
+  const rv = r.review || {};
+  const t = state.config.thresholds;
+  if (rv.faithfulness_score < t.faithfulness) reasons.push(`faithfulness score ${rv.faithfulness_score} is below the required ${t.faithfulness}`);
+  if (rv.compliance_score < t.compliance) reasons.push(`compliance score ${rv.compliance_score} is below the required ${t.compliance}`);
+  if (rv.brand_voice_score < t.brand) reasons.push(`brand voice score ${rv.brand_voice_score} is below the required ${t.brand}`);
+  if (rv.localisation_score < t.localisation) reasons.push(`localisation score ${rv.localisation_score} is below the required ${t.localisation}`);
+  if ((rv.unsupported_claims || []).length) reasons.push(`${rv.unsupported_claims.length} unsupported claim${rv.unsupported_claims.length > 1 ? 's' : ''} flagged by the review`);
+  return reasons;
+}
+
+const whyReviewBlock = (r) =>
+  r.status === 'approved' || r.status === 'human_approved'
+    ? h('p', { class: 'ok' }, 'Passed every automated check.')
+    : h('div', { class: 'why-review' }, h('b', {}, 'Why this needs review:'), h('ul', {}, reviewReasons(r).map((reason) => h('li', {}, reason))));
 
 function renderDetail(p, m, r) {
   if (r.status === 'error') return $('detail').replaceChildren(h('p', { class: 'err' }, `Error: ${r.error}`));
@@ -285,7 +356,6 @@ function renderDetail(p, m, r) {
   const errs = r.violations.filter((v) => v.severity === 'error');
   const warns = r.violations.filter((v) => v.severity === 'warn');
   const rv = r.review;
-  const sc = (label, v, min) => h('div', { class: 'score' }, h('b', { class: v >= min ? 'ok' : 'err' }, v), label);
 
   const source = h('div', { class: 'panel' },
     h('h3', {}, 'Source (input)'), h('b', {}, p.name),
@@ -308,9 +378,11 @@ function renderDetail(p, m, r) {
     h('p', { class: 'note' }, `Alt text: ${l.image_alt_text}`)
   );
 
+  const t = state.config.thresholds;
   const qa = h('div', { class: 'panel' },
     h('h3', {}, `Quality gate: ${r.status === 'approved' ? 'auto-approved' : 'routed to human review'}`),
-    h('div', { class: 'scores' }, sc('faithful', rv.faithfulness_score, 85), sc('compliance', rv.compliance_score, 85), sc('brand voice', rv.brand_voice_score, 70), sc('localisation', rv.localisation_score, 70)),
+    whyReviewBlock(r),
+    h('div', { class: 'scores' }, sc('faithful', rv.faithfulness_score, t.faithfulness), sc('compliance', rv.compliance_score, t.compliance), sc('brand voice', rv.brand_voice_score, t.brand), sc('localisation', rv.localisation_score, t.localisation)),
     h('p', { class: 'note' }, `Claude review: ${rv.summary}`),
     rv.unsupported_claims.length ? h('ul', {}, rv.unsupported_claims.map((c) => h('li', { class: 'err' }, `Unsupported: ${c}`))) : null,
     h('p', { class: 'note' }, `Generation attempts: ${r.history.map((x) => `#${x.attempt}: ${x.errors} rule violations`).join(' → ')} · ${(r.elapsedMs / 1000).toFixed(1)}s · tokens in/out ${r.usage.input + r.usage.cacheRead + r.usage.cacheWrite}/${r.usage.output} (cached ${r.usage.cacheRead})`),
@@ -340,7 +412,6 @@ function renderRoi(r) {
   if (!r) return;
   const a = state.config.assumptions;
   const kpi = (v, label) => h('div', { class: 'kpi' }, h('b', {}, v), h('span', {}, label));
-  $('roiCard').hidden = false;
   $('roi').replaceChildren(
     h('div', { class: 'kpis' },
       kpi(`${r.savings.timePct}%`, 'less effort (this run)'),
@@ -364,7 +435,47 @@ async function loadReviewQueue() {
   const shown = filter === 'stale' ? items.filter((e) => e.stale) : filter ? items.filter((e) => e.status === filter) : items;
   const staleCount = items.filter((e) => e.stale).length;
   $('reviewCount').textContent = `${stats.needsReview} awaiting review · ${staleCount} stale · ${stats.total} total`;
+  const tabCount = $('reviewTabCount');
+  tabCount.hidden = stats.needsReview === 0;
+  tabCount.textContent = stats.needsReview;
+  const approveAllBtn = $('reviewApproveAll');
+  approveAllBtn.textContent = `Approve all pending (${stats.needsReview})`;
+  approveAllBtn.disabled = stats.needsReview === 0;
   renderReviewList(shown);
+}
+
+// Bulk-clears the pending queue by approving everything with status 'needs_review' as-is.
+// Stale items are skipped (their source product changed; regenerate those individually first
+// rather than rubber-stamping content built from outdated specs).
+async function bulkApprove() {
+  const { items } = await api('/api/review/queue?status=needs_review');
+  const staleCount = items.filter((e) => e.stale).length;
+  const target = items.filter((e) => !e.stale);
+  if (!target.length) {
+    alert(staleCount ? `All ${staleCount} pending item(s) are stale — regenerate them individually first.` : 'Nothing pending to approve.');
+    return;
+  }
+  const skipNote = staleCount ? ` (${staleCount} stale item${staleCount > 1 ? 's' : ''} will be skipped — regenerate ${staleCount > 1 ? 'those' : 'it'} individually first)` : '';
+  if (!confirm(`Approve all ${target.length} pending item(s) as-is?${skipNote}`)) return;
+
+  const reviewer = $('reviewerName').value.trim();
+  const btn = $('reviewApproveAll');
+  const status = $('reviewBulkStatus');
+  btn.disabled = true;
+  let done = 0;
+  const tick = () => (status.textContent = `Approving ${done}/${target.length}...`);
+  tick();
+  await pool(target, 4, async (entry) => {
+    try {
+      await api('/api/review/decision', { productId: entry.productId, marketId: entry.marketId, audienceId: entry.audienceId, decision: 'approved', reviewer, note: 'Bulk approved' });
+    } catch (err) {
+      console.error(`Bulk approve failed for ${entry.productName} / ${entry.marketLabel}: ${err.message}`);
+    }
+    done++;
+    tick();
+  });
+  status.textContent = `Approved ${done}/${target.length}.`;
+  await loadReviewQueue();
 }
 
 function renderReviewList(items) {
@@ -430,7 +541,7 @@ async function submitDecision(entry, decision, form, msgEl) {
   const changed = canonical(edited) !== canonical(entry.listing);
   msgEl.textContent = 'Saving...';
   try {
-    const updated = await api('/api/review/decision', {
+    await api('/api/review/decision', {
       productId: entry.productId,
       marketId: entry.marketId,
       audienceId: entry.audienceId,
@@ -439,7 +550,8 @@ async function submitDecision(entry, decision, form, msgEl) {
       reviewer: $('reviewerName').value.trim(),
       note: form.note.value.trim()
     });
-    renderReviewDetail(updated);
+    state.openReview = null;
+    closeModal();
     await loadReviewQueue();
   } catch (err) {
     msgEl.className = 'hint bad';
@@ -464,13 +576,23 @@ function renderReviewDetail(entry) {
     h('h3', {}, 'Supplier notes'), h('p', { class: 'risky' }, entry.product.raw_notes),
     h('h3', {}, 'Claims Claude removed'),
     l.claims_removed.length ? h('ul', {}, l.claims_removed.map((c) => h('li', {}, h('b', {}, c.claim), ': ', c.reason))) : h('p', { class: 'note' }, 'None'),
-    h('h3', {}, 'Claude / gate review'),
+    h('h3', {}, `Quality gate: ${entry.status === 'approved' ? 'auto-approved' : entry.status === 'human_approved' ? 'human-approved' : entry.status === 'human_rejected' ? 'human-rejected' : 'routed to human review'}`),
+    whyReviewBlock(entry),
+    entry.review
+      ? h('div', { class: 'scores' },
+          sc('faithful', entry.review.faithfulness_score, state.config.thresholds.faithfulness),
+          sc('compliance', entry.review.compliance_score, state.config.thresholds.compliance),
+          sc('brand voice', entry.review.brand_voice_score, state.config.thresholds.brand),
+          sc('localisation', entry.review.localisation_score, state.config.thresholds.localisation))
+      : null,
     entry.review ? h('p', { class: 'note' }, entry.review.summary) : null,
+    h('h3', {}, 'Deterministic rules'),
     errs.length || warns.length
       ? h('ul', {}, [...errs.map((v) => h('li', { class: 'err' }, `${v.field}: ${v.message}`)), ...warns.map((v) => h('li', { class: 'wrn' }, `${v.field}: ${v.message}`))])
       : h('p', { class: 'ok' }, 'All deterministic rules passed.'),
     entry.human
-      ? h('p', { class: 'note mt' }, h('b', {}, `${STATUS_LABEL[entry.status]} `), `by ${entry.human.reviewer || 'unnamed reviewer'} on ${new Date(entry.human.decidedAt).toLocaleString()}`, entry.human.note ? ` — "${entry.human.note}"` : '')
+      ? h('p', { class: 'note mt' }, h('b', {}, `${STATUS_LABEL[entry.status]} `), `by ${entry.human.reviewer || 'unnamed reviewer'} on ${new Date(entry.human.decidedAt).toLocaleString()}`,
+          entry.human.edited ? ' — listing was edited before this decision' : '', entry.human.note ? ` — "${entry.human.note}"` : '')
       : null
   );
 
@@ -491,7 +613,10 @@ function renderReviewDetail(entry) {
     msg
   );
 
-  $('reviewDetail').replaceChildren(h('div', { class: 'cols' }, source, h('div', { class: 'panel' }, h('h3', {}, 'Edit and decide'), form, actions)));
+  const header = h('h2', { class: 'modal-title' }, `${entry.productName} — ${entry.marketLabel}`,
+    entry.audienceId && entry.audienceId !== 'general' ? h('span', { class: 'tag' }, entry.audienceLabel) : null);
+
+  openModal(h('div', {}, header, h('div', { class: 'cols' }, source, h('div', { class: 'panel' }, h('h3', {}, 'Edit and decide'), form, actions))));
 }
 
 init().catch((e) => document.body.prepend(h('p', { class: 'err' }, `Failed to load: ${e.message}`)));

@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadEnv, readJson } from './src/util.js';
-import { generateListing } from './src/pipeline.js';
+import { generateListing, THRESHOLDS } from './src/pipeline.js';
 import { computeRoi } from './src/roi.js';
 import { getMode, getModel } from './src/claude.js';
 import { validate } from './src/validator.js';
@@ -146,7 +146,7 @@ async function handleApi(req, res, url) {
     return json(res, 405, { error: 'Method not allowed' });
   }
   if (req.method === 'GET' && url.pathname === '/api/config') {
-    return json(res, 200, { mode: getMode(), model: getMode() === 'live' ? getModel() : null, products: products.map(applyOverride), markets, audiences, categories: Object.keys(categoryRules), assumptions });
+    return json(res, 200, { mode: getMode(), model: getMode() === 'live' ? getModel() : null, products: products.map(applyOverride), markets, audiences, categories: Object.keys(categoryRules), assumptions, thresholds: THRESHOLDS });
   }
   if (req.method === 'POST' && url.pathname === '/api/products/update') {
     const body = await readBody(req);

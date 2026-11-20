@@ -6,7 +6,7 @@
     "Lead with the benefit, then back it with a concrete spec from the source data.",
     "Titles follow: Brand + Product name + key feature + size/quantity. Use sentence-style capitalisation, never ALL CAPS."
   ],
-  "do_not_translate": ["AuraBuds", "HydroKeep", "EcoWeave", "SweepBot", "GlowRoot", "BlockBuilders", "PowerCrunch", "Nordwell"],
+  "do_not_translate": ["AuraBuds", "HydroKeep", "EcoWeave", "SweepBot", "GlowRoot", "BlockBuilders", "PowerCrunch", "TrailLite", "NordGrain", "FeatherFit", "Nordwell"],
   "glossary": {
     "earbuds": { "de": "In-Ear-Kopfhörer", "fr": "écouteurs intra-auriculaires", "es": "auriculares intraurales", "ja": "ワイヤレスイヤホン" },
     "robot vacuum": { "de": "Saugroboter", "fr": "robot aspirateur", "es": "robot aspirador", "ja": "ロボット掃除機" },

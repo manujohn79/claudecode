@@ -21,9 +21,12 @@ h1 { margin:0; font-size:38px; line-height:1.15; letter-spacing:-.02em; font-wei
 .pills span { font-size:13px; padding:5px 12px; border-radius:999px; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.22); backdrop-filter:blur(4px); }
 
 h2 { margin:0 0 14px; font-size:18px; display:flex; align-items:center; gap:10px; letter-spacing:-.01em; }
-h2 .step { display:inline-grid; place-items:center; width:28px; height:28px; border-radius:50%; background:var(--grad); color:#fff; font-size:14px; font-weight:700; flex:none; }
 
 main { max-width:1200px; margin:-44px auto 40px; padding:0 16px; display:grid; gap:20px; position:relative; z-index:2; }
+/* A grid item's default min-width is auto (its content's min-content size), which lets a wide
+   table or matrix silently force this whole column — and the page — wider than the viewport
+   instead of scrolling internally. min-width:0 lets each card shrink and scroll its own overflow. */
+main > * { min-width:0; }
 .card { background:var(--card); border:1px solid var(--line); border-radius:16px; padding:24px 26px; box-shadow:var(--shadow); }
 .card[hidden] { display:none; }
 .hint { font-size:12px; color:var(--muted); font-weight:500; margin-left:4px; }
@@ -38,17 +41,35 @@ table { border-collapse:collapse; width:100%; }
 th, td { text-align:left; padding:10px 10px; border-bottom:1px solid var(--line); vertical-align:top; }
 tr:last-child td { border-bottom:0; }
 th { font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; font-weight:600; }
-#products tr:not(:first-child):hover td { background:#fafaff; }
 .risky { color:var(--bad); font-size:13px; }
-#products td.risky { background:linear-gradient(90deg, var(--bad-soft), transparent); border-radius:8px; }
 input[type=checkbox] { accent-color:var(--accent); width:16px; height:16px; cursor:pointer; }
+
+/* Source products: tile grid */
+.product-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); gap:16px; margin-top:4px; }
+.tile { position:relative; display:flex; flex-direction:column; border:1px solid var(--line); border-radius:14px; background:#fff; overflow:hidden; transition:box-shadow .15s, transform .15s; }
+.tile:hover { box-shadow:var(--shadow); transform:translateY(-1px); }
+.tile.editing { grid-column:1 / -1; padding:18px 20px; }
+.tile.editing h3 { margin:0 0 12px; font-size:15px; }
+.tile-select { position:absolute; top:10px; left:10px; z-index:2; display:flex; background:rgba(255,255,255,.92); border-radius:8px; padding:5px 6px; box-shadow:0 1px 4px rgba(22,26,46,.18); }
+/* position:absolute on the img is required, not cosmetic: a flex child's default min-height:auto
+   otherwise uses the <img>'s own natural aspect ratio as a content minimum, silently overriding
+   the aspect-ratio box above and making every tile a different height per source photo. */
+.tile-image-wrap { position:relative; width:100%; aspect-ratio:4/3; background:var(--bg); overflow:hidden; flex:none; }
+.tile-image-wrap img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; display:block; }
+.tile-upload { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; text-align:center; border-radius:0; border:1.5px dashed var(--line); }
+.tile-image-remove { position:absolute; bottom:8px; right:8px; background:rgba(255,255,255,.92); border-radius:8px; padding:3px 10px; font-size:11px; box-shadow:0 1px 4px rgba(22,26,46,.18); }
+.tile-body { display:flex; flex-direction:column; gap:6px; padding:14px 14px 12px; flex:1; }
+.tile-specs { font-size:12.5px; color:var(--muted); }
+.tile-notes.risky { margin:0; padding:6px 8px; border-radius:8px; background:linear-gradient(90deg, var(--bad-soft), transparent); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.tile .row-actions { margin-top:auto; padding-top:4px; }
+@media (max-width:500px) { .product-grid { grid-template-columns:1fr; } }
 
 .chips { display:flex; flex-wrap:wrap; gap:10px; }
 .chips label { border:1.5px solid var(--line); border-radius:999px; padding:7px 16px; cursor:pointer; user-select:none; font-weight:500; background:#fff; transition:all .15s; display:inline-flex; align-items:center; gap:6px; }
 .chips label:hover { border-color:var(--accent); }
 .chips label:has(input:checked) { background:var(--accent-soft); border-color:var(--accent); color:#3a24b5; }
 
-.actions { margin-top:20px; display:flex; align-items:center; gap:14px; }
+.actions { margin-top:20px; display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
 button { background:var(--grad); color:#fff; border:0; border-radius:12px; padding:12px 26px; font:inherit; font-weight:600; font-size:15px; cursor:pointer; box-shadow:0 6px 16px rgba(108,76,241,.35); transition:transform .12s, box-shadow .12s, filter .12s; }
 button:hover:not(:disabled) { transform:translateY(-1px); box-shadow:0 10px 22px rgba(108,76,241,.4); filter:brightness(1.05); }
 button:disabled { opacity:.55; cursor:wait; }
@@ -62,7 +83,7 @@ input, select, textarea { font:inherit; padding:8px 10px; border:1px solid var(-
 input:focus, select:focus, textarea:focus { outline:2px solid var(--accent-soft); border-color:var(--accent); }
 
 /* Result matrix */
-#matrix { overflow-x:auto; }
+#matrix, .table-scroll { overflow-x:auto; }
 .cell { display:inline-block; min-width:104px; text-align:center; padding:5px 12px; border-radius:999px; cursor:pointer; font-size:13px; font-weight:600; border:1.5px solid transparent; transition:transform .1s; }
 .cell:hover { transform:scale(1.05); }
 .cell.approved, .cell.human_approved { background:var(--ok-soft); color:var(--ok); }
@@ -94,6 +115,11 @@ dd { margin:0; font-weight:500; }
 .score { text-align:center; border:1px solid var(--line); border-radius:12px; padding:10px 18px; font-size:12px; color:var(--muted); min-width:96px; background:#fafaff; }
 .score b { display:block; font-size:26px; line-height:1.2; }
 
+.why-review { background:var(--warn-soft); border:1px solid #f0d49a; border-radius:12px; padding:10px 14px; margin:8px 0; font-size:13px; }
+.why-review b { color:#9a6a00; }
+.why-review ul { margin:6px 0 0; padding-left:18px; }
+.why-review li { margin:3px 0; }
+
 /* KPIs */
 .kpis { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; margin-bottom:18px; }
 .kpi { border-radius:14px; padding:18px; color:#fff; background:var(--grad); box-shadow:0 8px 20px rgba(108,76,241,.22); }
@@ -110,13 +136,16 @@ dd { margin:0; font-weight:500; }
 @media (max-width:800px) { .cols, form#custom { grid-template-columns:1fr; } h1 { font-size:28px; } header { flex-direction:column; } }
 @media print { header::after { display:none; } .card { box-shadow:none; } button { display:none; } }
 
-details.plain { margin:0; padding:0; border:0; background:none; }
-details.plain > summary { list-style:none; display:flex; align-items:center; justify-content:space-between; }
-details.plain > summary::-webkit-details-marker { display:none; }
-details.plain > summary h2 { margin:0; }
-details.plain > summary::after { content:'+'; font-size:22px; color:var(--accent); font-weight:700; }
-details.plain[open] > summary::after { content:'-'; }
-details.plain[open] > summary { margin-bottom:14px; }
+/* Tab navigation (replaces the old stacked-and-scroll layout) */
+.tabs { display:flex; flex-wrap:wrap; gap:6px; background:var(--card); border:1px solid var(--line); border-radius:14px; padding:6px; box-shadow:var(--shadow); }
+.tab { flex:1 1 auto; display:flex; align-items:center; justify-content:center; gap:8px; background:none; color:var(--muted); box-shadow:none; border-radius:10px; padding:10px 16px; font-size:14px; font-weight:600; white-space:nowrap; }
+.tab:hover:not(.active) { background:var(--bg); color:var(--ink); transform:none; }
+.tab.active { background:var(--grad); color:#fff; box-shadow:0 6px 16px rgba(108,76,241,.3); }
+.tab .step { display:inline-grid; place-items:center; width:20px; height:20px; border-radius:50%; background:rgba(255,255,255,.25); color:inherit; font-size:11px; font-weight:700; flex:none; }
+.tab:not(.active) .step { background:var(--accent-soft); color:var(--accent); }
+.tab-count { background:var(--bad); color:#fff; border-radius:999px; font-size:11px; font-weight:700; padding:1px 7px; }
+.tab:not(.active) .tab-count { background:var(--bad-soft); color:var(--bad); }
+@media (max-width:800px) { .tabs { overflow-x:auto; } .tab { flex:none; } }
 
 .thumb { display:block; width:56px; height:56px; object-fit:cover; border-radius:10px; border:1px solid var(--line); margin-bottom:4px; }
 .thumb.big { width:100%; max-width:220px; height:auto; max-height:220px; margin:8px 0; }
@@ -138,7 +167,17 @@ label.inline input { width:150px; }
 .edit-product textarea { width:100%; }
 button.secondary.bad { color:var(--bad); border-color:var(--bad); }
 button.secondary.bad:hover:not(:disabled) { background:var(--bad-soft); }
-#reviewDetail .actions { margin-top:4px; }
+.modal-panel .actions { margin-top:4px; }
+
+/* Modal (review detail popup) */
+.modal-backdrop { position:fixed; inset:0; background:rgba(22,26,46,.55); backdrop-filter:blur(2px); display:flex; align-items:flex-start; justify-content:center; padding:5vh 16px; z-index:100; overflow-y:auto; }
+.modal-panel { position:relative; background:var(--card); border-radius:16px; box-shadow:0 20px 60px rgba(22,26,46,.35); padding:28px 26px; width:100%; max-width:960px; max-height:90vh; overflow-y:auto; }
+.modal-close { position:absolute; top:14px; right:14px; width:32px; height:32px; padding:0; border-radius:50%; background:var(--bg); color:var(--muted); box-shadow:none; font-size:18px; line-height:1; }
+.modal-close:hover { background:var(--bad-soft); color:var(--bad); transform:none; }
+.modal-title { padding-right:40px; margin-bottom:18px; }
+
+/* Product row actions */
+.row-actions { display:flex; gap:10px; margin-top:4px; }
 
 .conn { display:flex; flex-direction:column; align-items:flex-end; gap:8px; max-width:420px; }
 #keyForm { display:flex; gap:8px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }

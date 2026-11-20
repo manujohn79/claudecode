@@ -12,21 +12,21 @@
     "notes": "Use formal 'Sie' only if addressing the reader. Use metric units and German decimal comma."
   },
   {
-    "id": "web_fr", "label": "Own website FR", "channel": "website", "language": "French", "lang": "fr", "locale": "fr-FR",
-    "units": "metric", "title_max": 120, "bullet_count": 5, "bullet_max": 220, "description_min": 150, "description_max": 2500,
-    "banned_terms": ["meilleur du monde", "le meilleur", "n°1", "numéro 1", "numéro un", "livraison gratuite", "garantie à vie", "promotion", "soldes", "guérit", "guérison", "traite"],
-    "notes": "Use 'vous'. Use metric units and the French decimal comma. Keep a natural, not literal, tone."
+    "id": "cdiscount_fr", "label": "Cdiscount FR", "channel": "marketplace", "language": "French", "lang": "fr", "locale": "fr-FR",
+    "units": "metric", "title_max": 132, "bullet_count": 5, "bullet_max": 200, "description_min": 150, "description_max": 2500,
+    "banned_terms": ["meilleur du monde", "le meilleur", "n°1", "numéro 1", "numéro un", "livraison gratuite", "garantie à vie", "promotion", "soldes", "guérit", "guérison", "traite", "contactez-nous", "notre site"],
+    "notes": "Marketplace policy: no promotional or pricing language, no external contact details or links in the listing, no special characters in the title. Use 'vous'. Metric units and the French decimal comma."
   },
   {
-    "id": "web_es", "label": "Own website ES", "channel": "website", "language": "Spanish (Spain)", "lang": "es", "locale": "es-ES",
-    "units": "metric", "title_max": 120, "bullet_count": 5, "bullet_max": 220, "description_min": 150, "description_max": 2500,
-    "banned_terms": ["el mejor del mundo", "el mejor", "número 1", "nº 1", "envío gratis", "envío gratuito", "garantía de por vida", "oferta", "rebajas", "cura", "curación", "sana"],
-    "notes": "Use 'tú' form consistently. Use metric units and the Spanish decimal comma."
+    "id": "amazon_es", "label": "Amazon ES", "channel": "marketplace", "language": "Spanish (Spain)", "lang": "es", "locale": "es-ES",
+    "units": "metric", "title_max": 150, "bullet_count": 5, "bullet_max": 200, "description_min": 150, "description_max": 2000,
+    "banned_terms": ["el mejor del mundo", "el mejor", "número 1", "nº 1", "envío gratis", "envío gratuito", "garantía de por vida", "oferta", "rebajas", "cura", "curación", "sana", "mejor valorado"],
+    "notes": "Marketplace policy: no promotional or pricing language, no special characters in the title, no unverifiable superlatives. Use 'tú' form consistently. Metric units and the Spanish decimal comma."
   },
   {
-    "id": "web_jp", "label": "Own website JP", "channel": "website", "language": "Japanese", "lang": "ja", "locale": "ja-JP",
-    "units": "metric", "title_max": 100, "bullet_count": 5, "bullet_max": 120, "description_min": 80, "description_max": 1200,
-    "banned_terms": ["世界一", "最高", "ナンバーワン", "送料無料", "生涯保証", "セール", "治る", "治療", "治癒"],
-    "notes": "Use polite です/ます form. Use metric units. Keep titles compact; the character limits are lower than in alphabetic languages."
+    "id": "rakuten_jp", "label": "Rakuten JP", "channel": "marketplace", "language": "Japanese", "lang": "ja", "locale": "ja-JP",
+    "units": "metric", "title_max": 255, "bullet_count": 5, "bullet_max": 150, "description_min": 150, "description_max": 2200,
+    "banned_terms": ["世界一", "最高", "ナンバーワン", "送料無料", "生涯保証", "セール", "治る", "治療", "治癒", "激安"],
+    "notes": "Marketplace policy: Rakuten listings are conventionally long and benefit-rich (longer titles and descriptions than Amazon JP), but still no promotional/pricing language or unverifiable superlatives. Use polite です/ます form. Metric units."
   }
 ]

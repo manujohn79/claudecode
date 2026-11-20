@@ -25,5 +25,9 @@
     "required_attributes": ["pack_size", "protein_per_serving"],
     "legal_notice_required": true,
     "legal_hint": "Food: only nutrition/health claims listed in approved_claims. No 'boosts immunity', 'burns fat' or similar. Include a short storage/allergen notice if the source provides one."
+  },
+  "outdoor": {
+    "required_attributes": ["material", "capacity"],
+    "legal_notice_required": false
   }
 }

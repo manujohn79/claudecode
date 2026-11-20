@@ -21,14 +21,16 @@ Without an API key the app starts in a clearly labelled **offline mock** mode (E
 
 ## Demo script (5 minutes)
 
-1. Open the UI. The 7 products carry deliberately bad supplier notes: "cures eczema", "#1 seller", "free shipping", "safe for all ages", "boosts immunity".
-2. Select all products and all 5 markets (US, DE, FR, ES, JP). Click **Generate listings**.
+The UI is organised as tabs (Source products, Markets & generate, Results, Review queue, Business impact) instead of one long scrolling page — click a tab to jump straight to that step; generating listings automatically switches you to Results.
+
+1. Open the UI, on the **Source products** tab — 10 products shown as tiles. They carry deliberately bad supplier notes: "cures eczema", "#1 seller", "free shipping", "safe for all ages", "boosts immunity", "clinically proven to aid weight loss".
+2. Go to **Markets & generate**, with all products and all 5 markets (US, DE, FR, ES, JP) selected by default. Click **Generate listings** (this switches you to the Results tab automatically).
 3. Open a cell, for example GlowRoot x Amazon DE. The left panel shows the risky input and **Claims Claude removed**. The right panel shows a native German listing.
 4. In the quality gate panel, look at the "Generation attempts" line. It shows when Claude's first attempt broke a rule and was repaired automatically.
 5. Scroll to **Business impact** for the time and cost comparison and the 50,000-listing projection.
 6. Add your own product with the form to show that it generalises.
 7. Scroll to **Human review queue**, open one of the flagged listings, edit a field (or leave it as-is), and Approve or Reject. The decision, the reviewer name and any note are saved to disk immediately — reload the page or restart the server and the queue is unchanged.
-8. Back in **Source products**, click **Edit specs / notes** on a product, change a spec (e.g. a battery life or capacity figure) and Save. Its listings flip to **Stale** in the review queue; filter to "Stale (source changed)" and click **Regenerate**.
+8. Back in **Source products**, click **Edit** on a product (brand, name, specs and supplier notes are all editable; **Remove** drops a product from this session's list), change a spec (e.g. a battery life or capacity figure) and Save. Its listings flip to **Stale** in the review queue; filter to "Stale (source changed)" and click **Regenerate**.
 9. Pick **Audience: Professional / business buyer** (or Student, or Premium) above Generate listings, and run the same product again. It's stored as a separate variant from the general version — compare them side by side in the review queue, which now shows an Audience column.
 
 ## How Claude is used (it is the engine, not an add-on)
@@ -42,9 +44,9 @@ Without an API key the app starts in a clearly labelled **offline mock** mode (E
 
 Deterministic code (`src/validator.js`) enforces what must never depend on a model: character limits, banned terms per language, medical-claim terms, imperial units in metric markets, required attributes and legal notices.
 
-**Auto-approve rule:** zero rule errors, all four review scores above threshold (85/85/70/70) and no unsupported claims. Anything else is routed to a human.
+**Auto-approve rule:** zero rule errors, all four review scores above threshold (85/85/70/70) and no unsupported claims. Anything else is routed to a human. Every result and review-queue entry shows a plain-language "Why this needs review" explanation naming the exact gate(s) it failed — including the common one in offline mock mode, where brand-voice and localisation scores are fixed low placeholders (no real review ran) and everything is therefore always routed to review.
 
-**Human review queue:** every generation (from the UI or the CLI) is persisted to `data/store/` with its gate violations and Claude review. The queue lists everything not yet auto-approved; a reviewer can edit any field (re-validated against the same rules gate) and approve or reject, with their name and note recorded. Approvals/rejections never overwrite history — the prior version is kept, and every event is also appended to `data/store/audit.jsonl`.
+**Human review queue:** every generation (from the UI or the CLI) is persisted to `data/store/` with its gate violations and Claude review. The queue lists everything not yet auto-approved; clicking **Open** brings up the listing in a popup where a reviewer can edit any field (re-validated against the same rules gate) and approve or reject, with their name and note recorded — the popup confirms explicitly when a decision was made against an edited version ("listing was edited before this decision"). Approvals/rejections never overwrite history — the prior version is kept, and every event is also appended to `data/store/audit.jsonl`. **Approve all pending** bulk-approves everything with status "needs review" as-is (in one confirm step), skipping anything flagged **Stale** so outdated content never gets rubber-stamped — each bulk decision is recorded individually with a "Bulk approved" note, same audit trail as a one-by-one approval.
 
 **Stale-listing detection:** each stored listing keeps a hash of the exact product fields it was generated from. Editing a catalogue product's specs or supplier notes (in the Source products panel, simulating a PIM/ERP push) changes that hash, so any already-generated listing for that product is flagged **Stale** in the review queue (filterable) and in its detail view, with a one-click **Regenerate** that re-runs it against the current data. This is a prototype of pain point #9 (updating existing catalogs): a real integration would raise the same flag from a PIM webhook or a nightly diff instead of a manual edit.
 

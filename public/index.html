@@ -26,10 +26,17 @@
   </header>
 
   <main>
-    <section class="card">
-      <details class="plain">
-        <summary><h2><span class="step">1</span>Source products <span class="hint">synthetic data</span> <span class="hint" id="productCount"></span></h2></summary>
-        <table id="products"></table>
+    <nav class="tabs" id="tabs">
+      <button type="button" class="tab" data-tab="source"><span class="step">1</span>Source products</button>
+      <button type="button" class="tab" data-tab="markets"><span class="step">2</span>Markets &amp; generate</button>
+      <button type="button" class="tab" data-tab="results"><span class="step">3</span>Results</button>
+      <button type="button" class="tab" data-tab="review">Review queue <span class="tab-count" id="reviewTabCount" hidden></span></button>
+      <button type="button" class="tab" data-tab="impact"><span class="step">4</span>Business impact</button>
+    </nav>
+
+    <section class="card tab-panel" data-tab="source">
+      <h2>Source products <span class="hint">synthetic data</span> <span class="hint" id="productCount"></span></h2>
+      <div id="products" class="product-grid"></div>
       <details>
         <summary>Try your own product</summary>
         <form id="custom">
@@ -42,27 +49,26 @@
           <button type="submit" class="secondary">Add product</button>
         </form>
       </details>
-      </details>
     </section>
 
-    <section class="card">
-      <h2><span class="step">2</span>Markets</h2>
+    <section class="card tab-panel" data-tab="markets" hidden>
+      <h2>Markets &amp; generate</h2>
       <div id="markets" class="chips"></div>
       <div class="actions">
         <label class="inline">Audience <select id="audienceSel"></select></label>
         <button id="run">Generate listings</button>
         <span id="progress" class="hint"></span>
       </div>
-      <p class="hint block">Same product data, reframed for a different buyer. Generate once per audience to compare variants in the results below and in the review queue.</p>
+      <p class="hint block">Same product data, reframed for a different buyer. Generate once per audience to compare variants in the Results tab and the review queue.</p>
     </section>
 
-    <section class="card" id="resultsCard" hidden>
-      <h2><span class="step">3</span>Results <span class="hint">click a cell for details</span></h2>
-      <div id="matrix"></div>
+    <section class="card tab-panel" data-tab="results" id="resultsCard" hidden>
+      <h2>Results <span class="hint">click a cell for details</span></h2>
+      <div id="matrix"><p class="hint">Nothing generated yet &mdash; pick products and markets in the earlier tabs, then Generate listings.</p></div>
       <div id="detail"></div>
     </section>
 
-    <section class="card" id="reviewCard">
+    <section class="card tab-panel" data-tab="review" id="reviewCard" hidden>
       <h2>Human review queue <span class="hint" id="reviewCount"></span></h2>
       <p class="hint block">Persists across sessions and includes listings generated from the CLI. A human reviewer approves, edits, or rejects anything the quality gate did not auto-approve.</p>
       <div class="actions">
@@ -76,16 +82,18 @@
         </select>
         <label class="inline">Reviewer name <input id="reviewerName" maxlength="80" placeholder="e.g. Priya"></label>
         <button type="button" id="reviewRefresh" class="secondary">Refresh</button>
+        <button type="button" id="reviewApproveAll" class="secondary">Approve all pending</button>
+        <span id="reviewBulkStatus" class="hint"></span>
       </div>
-      <table id="reviewList"></table>
-      <div id="reviewDetail"></div>
+      <div class="table-scroll"><table id="reviewList"></table></div>
     </section>
 
-    <section class="card" id="roiCard" hidden>
-      <h2><span class="step">4</span>Business impact</h2>
-      <div id="roi"></div>
+    <section class="card tab-panel" data-tab="impact" id="roiCard" hidden>
+      <h2>Business impact</h2>
+      <div id="roi"><p class="hint">Generate some listings first &mdash; this fills in automatically from the run.</p></div>
     </section>
   </main>
+  <div id="modalRoot"></div>
   <script src="/app.js" type="module"></script>
 </body>
 </html>
