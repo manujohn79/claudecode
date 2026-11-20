@@ -40,7 +40,7 @@ function normalise(l) {
   };
 }
 
-export async function generateListing(product, market, ctx) {
+export async function generateListing(product, market, ctx, audience) {
   const { brand, categoryRules } = ctx;
   const mode = getMode();
   const started = Date.now();
@@ -55,14 +55,14 @@ export async function generateListing(product, market, ctx) {
     attempts++;
     if (mode === 'live') {
       const r = await callTool({
-        system: generationSystem(brand, market, categoryRules),
+        system: generationSystem(brand, market, categoryRules, audience),
         user: generationUser(product, categoryRules, feedback),
         tool: LISTING_TOOL
       });
       usage = addUsage(usage, r.usage);
       listing = normalise(r.output);
     } else {
-      listing = normalise(mockGenerate(product, market, categoryRules));
+      listing = normalise(mockGenerate(product, market, categoryRules, audience));
     }
     violations = validate(listing, market, product, categoryRules);
     history.push({ attempt: attempts, errors: violations.filter((v) => v.severity === 'error').length });
@@ -74,7 +74,7 @@ export async function generateListing(product, market, ctx) {
   if (mode === 'live') {
     const r = await callTool({
       system: reviewSystem(brand),
-      user: reviewUser(product, market, listing),
+      user: reviewUser(product, market, listing, audience),
       tool: REVIEW_TOOL,
       maxTokens: 1200,
       temperature: 0
@@ -99,6 +99,7 @@ export async function generateListing(product, market, ctx) {
   return {
     productId: product.id,
     marketId: market.id,
+    audienceId: audience?.id || 'general',
     mode,
     hasImage: Boolean(product.image),
     status: passes ? 'approved' : 'needs_review',

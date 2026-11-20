@@ -4,7 +4,7 @@
 
 const clip = (s, n) => (s.length > n ? s.slice(0, n - 1).trimEnd() + '…' : s);
 
-export function mockGenerate(product, market, categoryRules) {
+export function mockGenerate(product, market, categoryRules, audience) {
   const specs = Object.entries(product.specs);
   const tag = `[MOCK ${market.locale}]`;
   const rules = categoryRules[product.category] || {};
@@ -12,8 +12,9 @@ export function mockGenerate(product, market, categoryRules) {
   for (const key of rules.required_attributes || []) attributes[key] ??= 'n/a';
   const bullets = specs.slice(0, market.bullet_count).map(([k, v]) => clip(`${k.replace(/_/g, ' ')}: ${v}`, market.bullet_max));
   while (bullets.length < market.bullet_count) bullets.push('Designed for everyday use');
+  const audienceNote = audience && audience.id !== 'general' ? ` [For ${audience.label}: ${audience.guidance}]` : '';
   const description = clip(
-    `${tag} ${product.name} from ${product.brand}. ` + specs.map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}.`).join(' ') + ' Offline mock output for UI testing only.',
+    `${tag} ${product.name} from ${product.brand}. ` + specs.map(([k, v]) => `${k.replace(/_/g, ' ')}: ${v}.`).join(' ') + ` Offline mock output for UI testing only.${audienceNote}`,
     market.description_max
   );
   return {

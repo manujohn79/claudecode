@@ -1,0 +1,22 @@
+[
+  {
+    "id": "general",
+    "label": "General shopper",
+    "guidance": "Default brand voice. No audience-specific framing."
+  },
+  {
+    "id": "professional",
+    "label": "Professional / business buyer",
+    "guidance": "Lead with reliability, precise specifications and total cost of ownership. Frame benefits around productivity, dependability and professional use cases. Precise, no-nonsense tone."
+  },
+  {
+    "id": "student",
+    "label": "Student / budget-conscious",
+    "guidance": "Lead with value, versatility and everyday practicality. Frame benefits around affordability and getting more for less. Friendly, approachable tone."
+  },
+  {
+    "id": "premium",
+    "label": "Premium / gift buyer",
+    "guidance": "Lead with craftsmanship, design and the experience of owning or giving the product. Frame benefits around quality and occasion. Elevated, confident tone, with no invented superlatives."
+  }
+]
