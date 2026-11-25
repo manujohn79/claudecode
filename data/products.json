@@ -18,18 +18,6 @@
     "raw_notes": "Soft feel-good fabric that cures skin irritation and heals eczema. Dermatologist loved. Bestseller of the season."
   },
   {
-    "id": "P004", "sku": "NW-SB-004", "brand": "SweepBot", "name": "SweepBot S5 Robot Vacuum", "category": "electronics",
-    "specs": { "colour": "White", "connectivity": "Wi-Fi 2.4 GHz, app control", "battery_life": "150 min runtime", "suction": "3000 Pa", "height": "9.5 cm (3.7 in)", "dust_bin": "400 ml", "noise": "58 dB", "in_the_box": "Robot, charging dock, 2 side brushes, 1 filter, manual" },
-    "approved_claims": ["Up to 150 min runtime", "3000 Pa suction"],
-    "raw_notes": "Guaranteed to clean every corner. Cleans better than any competitor. Smart mapping. Discount code SWEEP10."
-  },
-  {
-    "id": "P005", "sku": "NW-GR-005", "brand": "GlowRoot", "name": "GlowRoot Daily Moisturiser 50 ml", "category": "cosmetics",
-    "specs": { "volume": "50 ml (1.7 fl oz)", "key_ingredients": "Hyaluronic acid, glycerin, shea butter", "skin_type": "Normal to dry", "fragrance": "Fragrance-free", "pao": "12 months after opening" },
-    "approved_claims": ["Hydrates skin for 24 hours (consumer test, n=60)", "Fragrance-free"],
-    "raw_notes": "Cures acne and heals eczema. Clinically proven to remove wrinkles in 7 days. Dermatologist approved. Number one moisturiser."
-  },
-  {
     "id": "P006", "sku": "NW-BB-006", "brand": "BlockBuilders", "name": "BlockBuilders Castle Set 120 pcs", "category": "toys",
     "specs": { "age_range": "4+ years", "piece_count": "120 pieces", "material": "ABS plastic", "includes": "120 bricks, 2 mini figures, building guide", "small_parts": "Yes, contains small parts", "finished_size": "32 x 24 cm (12.6 x 9.4 in)" },
     "approved_claims": ["120 pieces", "Compatible with major brick brands"],
@@ -40,23 +28,5 @@
     "specs": { "pack_size": "12 x 55 g (660 g)", "protein_per_serving": "20 g protein per bar", "sugar": "2.1 g per bar", "flavour": "Peanut caramel", "allergens": "Contains peanuts, milk, soy", "storage": "Store in a cool dry place" },
     "approved_claims": ["High protein", "Low sugar"],
     "raw_notes": "Boosts immunity, burns fat and prevents muscle loss. Healthiest bar on the market. 100% natural."
-  },
-  {
-    "id": "P008", "sku": "NW-TL-008", "brand": "TrailLite", "name": "TrailLite Backpack 28L", "category": "outdoor",
-    "specs": { "material": "Recycled ripstop nylon", "capacity": "28 L", "water_resistance": "Water-resistant coating (not waterproof)", "weight": "850 g", "laptop_sleeve": "Fits up to 16-inch laptop", "colour": "Charcoal grey" },
-    "approved_claims": ["Made from recycled ripstop nylon", "Fits up to 16-inch laptop"],
-    "raw_notes": "100% waterproof guarantee for life! Best backpack on Amazon, beats every competitor. Free gift included this week."
-  },
-  {
-    "id": "P009", "sku": "NW-NG-009", "brand": "NordGrain", "name": "NordGrain Granola Clusters 450g", "category": "food",
-    "specs": { "pack_size": "450 g", "protein_per_serving": "4 g protein per 40 g serving", "sugar": "5 g per serving", "ingredients": "Oats, honey, almonds, dried cranberries", "allergens": "Contains nuts, may contain traces of gluten", "storage": "Store in a cool dry place" },
-    "approved_claims": ["Good source of whole grains", "No artificial flavours"],
-    "raw_notes": "Boosts energy instantly and clinically proven to aid weight loss. #1 breakfast choice in Scandinavia. 100% natural, guaranteed to make you feel amazing."
-  },
-  {
-    "id": "P010", "sku": "NW-FF-010", "brand": "FeatherFit", "name": "FeatherFit Running Shoes", "category": "apparel",
-    "specs": { "material": "Breathable mesh upper, rubber outsole", "sizes": "38-46 EU", "weight": "230 g (size 42)", "drop": "8 mm heel-to-toe drop", "colour": "Grey/Orange", "closure": "Lace-up" },
-    "approved_claims": ["Breathable mesh upper", "230 g lightweight design (size 42)"],
-    "raw_notes": "Guaranteed to make you run faster! Best running shoe in the world, loved by professional athletes. Free shipping, buy 2 get 1 free!"
   }
 ]

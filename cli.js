@@ -1,16 +1,22 @@
-// Batch runner: node cli.js [--products P001,P005] [--markets amazon_de,cdiscount_fr] [--audiences professional,student] [--concurrency 4]
+// Batch runner: node cli.js [--products P001,P002] [--markets amazon_de,amazon_es] [--audiences professional,student] [--concurrency 8]
 // Writes output/listings.json and output/listings.csv and prints the business-impact summary.
 import fs from 'node:fs';
 import path from 'node:path';
+import dns from 'node:dns';
 import { fileURLToPath } from 'node:url';
 import { loadEnv, readJson } from './src/util.js';
+
+// See server.js: some networks route IPv6 but it's a dead end, so prefer IPv4 outright.
+dns.setDefaultResultOrder('ipv4first');
 import { generateListing } from './src/pipeline.js';
 import { computeRoi } from './src/roi.js';
 import { getMode, getModel } from './src/claude.js';
 import { initStore, recordGeneration } from './src/store.js';
+import { loadAnthropicKeyFromVault } from './src/azureKeyVault.js';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 loadEnv(path.join(root, '.env'));
+await loadAnthropicKeyFromVault();
 initStore(path.join(root, 'data', 'store'));
 const data = (f) => readJson(path.join(root, 'data', f));
 const brand = data('brand.json');
@@ -22,7 +28,7 @@ const pick = (list, ids) => (ids ? list.filter((x) => ids.split(',').includes(x.
 const products = pick(data('products.json'), args.products);
 const markets = pick(data('markets.json'), args.markets);
 const audiences = pick(data('audiences.json'), args.audiences || 'general');
-const limit = Number(args.concurrency) || 4;
+const limit = Number(args.concurrency) || 8;
 
 console.log(`Mode: ${getMode()}${getMode() === 'live' ? ` (${getModel()})` : ' (offline mock; set ANTHROPIC_API_KEY)'}`);
 const jobs = products.flatMap((p) => markets.flatMap((m) => audiences.map((a) => ({ p, m, a }))));

@@ -19,13 +19,25 @@ node --test test/           # unit tests
 
 Without an API key the app starts in a clearly labelled **offline mock** mode (English placeholder output) so the UI can be tested. Real demos need a key. Optional: `CLAUDE_MODEL` (default `claude-sonnet-4-5`).
 
+**If you cloned/pulled this repo fresh:** everything below (`GATEWAY_URL`, `ANTHROPIC_API_KEY`, the `AZURE_*` vars) is read purely from environment variables via `.env` — nothing is hardcoded in source, and `.env` is git-ignored on purpose, so it never comes with the repo. The app runs immediately with no setup at all (offline mock mode); to get **live** Claude output, pick one:
+- **Simplest, no org dependency:** put your own `ANTHROPIC_API_KEY=sk-ant-...` in `.env`. Nothing else needed — this skips the gateway and Azure Key Vault entirely.
+- **Using your org's gateway/Key Vault (like this deployment does):** you need your *own* Azure AD app registration (or access granted to an existing one) with "get secret" on the vault, plus whatever network/VPN access the gateway itself requires (see the Azure Key Vault and Internal LLM gateway sections below for exactly which `AZURE_*`/`GATEWAY_URL` vars to set). Ask whoever administers your org's vault/gateway for these rather than copying another teammate's `.env` — a client secret is a real credential and sharing it in chat, email, or a committed file defeats the point of keeping it out of git. If your team *does* want to share one set of credentials deliberately, put them in a password manager or your org's secret store, not plain text.
+
+**Internal LLM gateway (optional):** set `GATEWAY_URL` to route every Claude call (generation and key verification alike) through an internal proxy instead of `api.anthropic.com` directly — common in organisations that front Anthropic with their own gateway for billing/access control. The client assumes the gateway mirrors Anthropic's own Messages API shape (`POST {GATEWAY_URL}/v1/messages`, same `x-api-key` header) — see `getApiUrl()`/`verifyApiKey()` in [src/claude.js](src/claude.js) if your gateway's actual contract differs (e.g. a different auth header or path). When a gateway is configured, `CLAUDE_MODEL` must be set to a model name *it* recognises (not necessarily Anthropic's native ids — e.g. an org-specific suffix), and the "Connect Claude" key format check no longer requires `sk-ant-...`, since a gateway token can look like anything. Confirmed working in production (all 10 demo products × 5 markets generated live) against a LiteLLM gateway fronting Claude via Azure AI, through a corporate TLS-inspecting proxy (Zscaler). That combination needed four adjustments, all already built in and scoped to gateway mode only (direct-Anthropic behaviour is unchanged):
+- `tool_choice` falls back to `{ type: "auto" }` (that backend rejects forced `"tool"`/`"any"` choice) — if the model occasionally replies in plain text instead of calling the tool, `callTool()` retries with an explicit nudge rather than failing the generation outright.
+- `temperature` is omitted entirely (rejected as "deprecated for this model").
+- Response latency was far higher and more variable than direct Anthropic (seconds up to ~70s per call), so `verifyApiKey()` uses a longer timeout in gateway mode.
+- The TLS-inspecting proxy intermittently produced a transient `ConnectTimeoutError` on individual connection attempts; `verifyApiKey()` now retries like `callTool()` already did, instead of failing outright on one bad connection attempt (this only matters for key verification at startup/"Connect Claude" — a one-shot call with no other chance to recover).
+
+**Azure Key Vault (optional):** instead of putting `ANTHROPIC_API_KEY` in `.env`, both `server.js` and `cli.js` will fetch it from Azure Key Vault at startup if `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET` and `AZURE_KEY_VAULT_URL` are set (see `.env.example`) — a plain REST call (Azure AD client-credentials grant, then one Key Vault GET), no `@azure/*` SDK, so the project stays dependency-free. The service principal needs "get secret" on the vault (RBAC role **Key Vault Secrets User**, or a classic access policy with Get on secrets). `.env`/a manually pasted key always wins — the vault is only consulted when no key is already set. The fetched key is verified against the Anthropic API before use; any failure (bad secret, network, permissions) is logged and the app falls back to offline mock mode rather than crashing. `AZURE_CLIENT_SECRET` is itself a credential: keep it out of `.env` in anything beyond local testing — use your platform's own secret injection (e.g. an Azure App Service / Container Apps secret setting) instead.
+
 ## Demo script (5 minutes)
 
 The UI is organised as tabs (Source products, Markets & generate, Results, Review queue, Business impact) instead of one long scrolling page — click a tab to jump straight to that step; generating listings automatically switches you to Results.
 
-1. Open the UI, on the **Source products** tab — 10 products shown as tiles. They carry deliberately bad supplier notes: "cures eczema", "#1 seller", "free shipping", "safe for all ages", "boosts immunity", "clinically proven to aid weight loss".
-2. Go to **Markets & generate**, with all products and all 5 markets (US, DE, FR, ES, JP) selected by default. Click **Generate listings** (this switches you to the Results tab automatically).
-3. Open a cell, for example GlowRoot x Amazon DE. The left panel shows the risky input and **Claims Claude removed**. The right panel shows a native German listing.
+1. Open the UI, on the **Source products** tab — 5 products shown as tiles. They carry deliberately bad supplier notes: "cures eczema", "#1 seller", "free shipping", "safe for all ages", "boosts immunity".
+2. Go to **Markets & generate**, with all products and all 3 markets (Amazon US, Amazon DE, Amazon ES) selected by default. Click **Generate listings** (this switches you to the Results tab automatically).
+3. Open a cell, for example AuraBuds Pro x Amazon DE. The left panel shows the risky input and **Claims Claude removed**. The right panel shows a native German listing.
 4. In the quality gate panel, look at the "Generation attempts" line. It shows when Claude's first attempt broke a rule and was repaired automatically.
 5. Scroll to **Business impact** for the time and cost comparison and the 50,000-listing projection.
 6. Add your own product with the form to show that it generalises.
@@ -113,6 +125,7 @@ flowchart LR
 server.js            HTTP server + API (config, generate, roi, review queue)
 cli.js               batch runner
 src/claude.js        Claude API client (tool use, prompt caching, retries)
+src/azureKeyVault.js  optional: fetch ANTHROPIC_API_KEY from Azure Key Vault at startup
 src/prompts.js       system prompts + tool schemas
 src/pipeline.js      generate -> validate -> repair -> review -> gate
 src/validator.js     deterministic compliance rules

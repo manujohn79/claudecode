@@ -40,6 +40,23 @@ function normalise(l) {
   };
 }
 
+// Same idea for the review tool's output: some gateways (tool_choice "auto" doesn't enforce the
+// schema's "required" fields the way Anthropic's native forced tool-use does) return a review
+// missing summary/issues/unsupported_claims. Without this, the UI reads e.g.
+// `rv.unsupported_claims.length` and throws, silently breaking the whole detail view.
+function normaliseReview(rv) {
+  const score = (v) => (typeof v === 'number' && Number.isFinite(v) ? v : 0); // missing/invalid score fails the gate, never silently passes it
+  return {
+    faithfulness_score: score(rv?.faithfulness_score),
+    compliance_score: score(rv?.compliance_score),
+    brand_voice_score: score(rv?.brand_voice_score),
+    localisation_score: score(rv?.localisation_score),
+    unsupported_claims: Array.isArray(rv?.unsupported_claims) ? rv.unsupported_claims.map(String) : [],
+    issues: Array.isArray(rv?.issues) ? rv.issues.map(String) : [],
+    summary: String(rv?.summary ?? '(the review did not include a summary)')
+  };
+}
+
 export async function generateListing(product, market, ctx, audience) {
   const { brand, categoryRules } = ctx;
   const mode = getMode();
@@ -80,9 +97,9 @@ export async function generateListing(product, market, ctx, audience) {
       temperature: 0
     });
     usage = addUsage(usage, r.usage);
-    review = r.output;
+    review = normaliseReview(r.output);
   } else {
-    review = mockReview(listing, violations);
+    review = normaliseReview(mockReview(listing, violations));
   }
 
   const passes =

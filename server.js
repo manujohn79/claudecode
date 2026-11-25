@@ -1,16 +1,24 @@
 import http from 'node:http';
 import fs from 'node:fs';
 import path from 'node:path';
+import dns from 'node:dns';
 import { fileURLToPath } from 'node:url';
 import { loadEnv, readJson } from './src/util.js';
+
+// Some networks (seen on this machine) route IPv6 but it's a dead end, so Node's default
+// "try IPv6 first" can burn the whole request timeout on a hung IPv6 attempt before ever
+// falling back to IPv4. Prefer IPv4 outright rather than eating that latency on every call.
+dns.setDefaultResultOrder('ipv4first');
 import { generateListing, THRESHOLDS } from './src/pipeline.js';
 import { computeRoi } from './src/roi.js';
-import { getMode, getModel } from './src/claude.js';
+import { getMode, getModel, verifyApiKey } from './src/claude.js';
 import { validate } from './src/validator.js';
 import { initStore, keyOf, recordGeneration, getListing, listAll, stats, recordDecision, productHash, applyOverride, setOverride } from './src/store.js';
+import { loadAnthropicKeyFromVault } from './src/azureKeyVault.js';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 loadEnv(path.join(root, '.env'));
+await loadAnthropicKeyFromVault();
 initStore(path.join(root, 'data', 'store'));
 
 const data = (f) => readJson(path.join(root, 'data', f));
@@ -40,7 +48,7 @@ const PORT = Number(process.env.PORT) || 3000;
 const MAX_BODY = 100_000;
 const MAX_IMAGE_B64 = 1_400_000; // ~1 MB decoded; the UI downsizes images to ~1024px before upload
 const MAX_IMAGE_BODY = MAX_IMAGE_B64 + 100_000;
-const MAX_INFLIGHT = 8; // simple cost/abuse guard on concurrent Claude work
+const MAX_INFLIGHT = 10; // simple cost/abuse guard on concurrent Claude work
 let inflight = 0;
 
 const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
@@ -128,19 +136,14 @@ async function handleApi(req, res, url) {
     }
     if (req.method === 'POST') {
       const { key } = await readBody(req);
-      if (typeof key !== 'string' || !/^sk-ant-[A-Za-z0-9_-]{20,300}$/.test(key.trim())) return json(res, 400, { error: 'That does not look like an Anthropic API key (sk-ant-...)' });
-      let check;
-      try {
-        check = await fetch('https://api.anthropic.com/v1/models?limit=1', {
-          headers: { 'x-api-key': key.trim(), 'anthropic-version': '2023-06-01' },
-          signal: AbortSignal.timeout(15_000)
-        });
-      } catch {
-        return json(res, 502, { error: 'Could not reach api.anthropic.com to verify the key (network or proxy/certificate issue)' });
-      }
-      if (check.status === 401 || check.status === 403) return json(res, 401, { error: 'Anthropic rejected this key' });
-      if (!check.ok) return json(res, 502, { error: `Key check failed (HTTP ${check.status})` });
-      process.env.ANTHROPIC_API_KEY = key.trim();
+      const trimmed = typeof key === 'string' ? key.trim() : '';
+      // A gateway's own tokens aren't necessarily in Anthropic's sk-ant-... shape, so only
+      // enforce that format when calling Anthropic directly (no GATEWAY_URL configured).
+      const looksValid = process.env.GATEWAY_URL ? trimmed.length >= 20 : /^sk-ant-[A-Za-z0-9_-]{20,300}$/.test(trimmed);
+      if (!looksValid) return json(res, 400, { error: process.env.GATEWAY_URL ? 'That key looks too short.' : 'That does not look like an Anthropic API key (sk-ant-...)' });
+      const check = await verifyApiKey(trimmed);
+      if (!check.ok) return json(res, check.error.includes('rejected') ? 401 : 502, { error: check.error });
+      process.env.ANTHROPIC_API_KEY = trimmed;
       return json(res, 200, { mode: getMode(), model: getModel() });
     }
     return json(res, 405, { error: 'Method not allowed' });

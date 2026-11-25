@@ -276,7 +276,7 @@ async function run() {
   renderMatrix(products, markets);
   tick();
 
-  await pool(jobs, 4, async ({ p, m }) => {
+  await pool(jobs, 8, async ({ p, m }) => {
     try {
       const body = { marketId: m.id, audienceId, ...(p.custom ? { product: { ...p, image: undefined } } : { productId: p.id }), ...(p.image ? { image: { media_type: p.image.media_type, data: p.image.data } } : {}) };
       state.results.set(keyOf(p.id, m.id, audienceId), await api('/api/generate', body));
@@ -383,8 +383,8 @@ function renderDetail(p, m, r) {
     h('h3', {}, `Quality gate: ${r.status === 'approved' ? 'auto-approved' : 'routed to human review'}`),
     whyReviewBlock(r),
     h('div', { class: 'scores' }, sc('faithful', rv.faithfulness_score, t.faithfulness), sc('compliance', rv.compliance_score, t.compliance), sc('brand voice', rv.brand_voice_score, t.brand), sc('localisation', rv.localisation_score, t.localisation)),
-    h('p', { class: 'note' }, `Claude review: ${rv.summary}`),
-    rv.unsupported_claims.length ? h('ul', {}, rv.unsupported_claims.map((c) => h('li', { class: 'err' }, `Unsupported: ${c}`))) : null,
+    h('p', { class: 'note' }, `Claude review: ${rv.summary ?? '(the review did not include a summary)'}`),
+    (rv.unsupported_claims || []).length ? h('ul', {}, rv.unsupported_claims.map((c) => h('li', { class: 'err' }, `Unsupported: ${c}`))) : null,
     h('p', { class: 'note' }, `Generation attempts: ${r.history.map((x) => `#${x.attempt}: ${x.errors} rule violations`).join(' → ')} · ${(r.elapsedMs / 1000).toFixed(1)}s · tokens in/out ${r.usage.input + r.usage.cacheRead + r.usage.cacheWrite}/${r.usage.output} (cached ${r.usage.cacheRead})`),
     errs.length || warns.length
       ? h('ul', {}, [...errs.map((v) => h('li', { class: 'err' }, `${v.field}: ${v.message}`)), ...warns.map((v) => h('li', { class: 'wrn' }, `${v.field}: ${v.message}`))])
@@ -585,7 +585,7 @@ function renderReviewDetail(entry) {
           sc('brand voice', entry.review.brand_voice_score, state.config.thresholds.brand),
           sc('localisation', entry.review.localisation_score, state.config.thresholds.localisation))
       : null,
-    entry.review ? h('p', { class: 'note' }, entry.review.summary) : null,
+    entry.review ? h('p', { class: 'note' }, entry.review.summary ?? '(the review did not include a summary)') : null,
     h('h3', {}, 'Deterministic rules'),
     errs.length || warns.length
       ? h('ul', {}, [...errs.map((v) => h('li', { class: 'err' }, `${v.field}: ${v.message}`)), ...warns.map((v) => h('li', { class: 'wrn' }, `${v.field}: ${v.message}`))])
